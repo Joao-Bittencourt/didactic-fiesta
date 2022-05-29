@@ -37,8 +37,8 @@ void movimentaSeSairDaArena() {
 }
 
 void movimentaParaEsquerda() {
-    servo_esquerdo.write(180);
-    servo_direito.write(180);
+    movimenta(servo_esquerdo, 180, 0);
+    movimenta(servo_direito, 180, 400);
 }
 
 void movimentaParaDireita() {

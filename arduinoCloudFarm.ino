@@ -7,6 +7,9 @@
   The following variables are automatically generated and updated when changes are made to the Thing
 
   float humity;
+  int raining;
+  int soilMoisture;
+  int temperature;
 
   Variables which are marked as READ/WRITE in the Cloud Thing will also have functions
   which are called when their values are changed from the Dashboard.
@@ -15,42 +18,83 @@
 
 #include "thingProperties.h"
 
-void setup() {
-  // Initialize serial and wait for port to open:
-  Serial.begin(9600);
-  // This delay gives the chance to wait for a Serial Monitor without blocking if none is found
-  delay(1500);
+#include "DHT.h"
 
-  // Defined in thingProperties.h
-  initProperties();
+#define DHTPIN 4
+#define umidadeDoSoloPin 2
 
-  // Connect to Arduino IoT Cloud
-  ArduinoCloud.begin(ArduinoIoTPreferredConnection);
+#define DHTTYPE DHT11 // DHT 11
+DHT dht(DHTPIN, DHTTYPE);
 
-  /*
+void setup()
+{
+    // Initialize serial and wait for port to open:
+    Serial.begin(9600);
+    // This delay gives the chance to wait for a Serial Monitor without blocking if none is found
+    delay(1500);
+
+    // Defined in thingProperties.h
+    initProperties();
+
+    // Connect to Arduino IoT Cloud
+    ArduinoCloud.begin(ArduinoIoTPreferredConnection);
+
+    /*
      The following function allows you to obtain more information
      related to the state of network and IoT Cloud connection and errors
      the higher number the more granular information you’ll get.
      The default is 0 (only errors).
      Maximum is 4
   */
-  setDebugMessageLevel(2);
-  ArduinoCloud.printDebugInfo();
+    setDebugMessageLevel(2);
+    ArduinoCloud.printDebugInfo();
+
+    pinMode(umidadeDoSoloPin, INPUT);
+    dht.begin();
 }
 
-void loop() {
-  ArduinoCloud.update();
-  
-  humity = analogRead(4);
+void loop()
+{
+    ArduinoCloud.update();
 
+    /*
+    float humity;
+  int raining;
+  int soilMoisture;
+  int temperature;
+  */
 
+    humity = getSensorHumityData();
+    temperature = getSensorTemperatureData();
+
+    raining = 0;
+    soilMoisture = 0
+
+        delay(5000);
 }
 
+float getSensorHumityData()
+{
 
-/*
-  Since Humity is READ_WRITE variable, onHumityChange() is
-  executed every time a new value is received from IoT Cloud.
-*/
-void onHumityChange()  {
-  // Add your code here to act upon Humity change
+    float h = dht.readHumidity();
+    if (isnan(h))
+    {
+        Serial.println(F("Failed to read from DHT sensor!"));
+        return -1.00;
+    }
+
+    return h;
+}
+
+float getSensorTemperatureData()
+{
+
+    float t = dht.readTemperature();
+    if (isnan(t))
+    {
+        Serial.println(F("Failed to read from DHT sensor!"));
+        return -1.00;
+    }
+
+    return t;
 }
